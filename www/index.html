@@ -16,6 +16,9 @@
     ons.ready(function() {
       console.log("Onsen UI is ready!");
 
+      document.querySelector('#saveButton').onclick = () =>
+        alert('tapped button to save');
+
       document.querySelector('#date').value = getDate();
       document.querySelector('#time').value = getTime();
 
@@ -32,6 +35,14 @@
 <body>
 
   <ons-page>
+    <ons-toolbar>
+      <div class="right">
+        <ons-toolbar-button id="saveButton">
+          Save
+        </ons-toolbar-button>
+      </div>
+    </ons-toolbar>
+
     <ons-list>
 
       <!-- date -->

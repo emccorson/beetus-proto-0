@@ -15,15 +15,55 @@
   <script>
     ons.ready(function() {
       console.log("Onsen UI is ready!");
+
+      document.querySelector('#date').value = getDate();
+      document.querySelector('#time').value = getTime();
     });
 
-    if (ons.platform.isIPhoneX()) {
-      document.documentElement.setAttribute('onsflag-iphonex-portrait', '');
-      document.documentElement.setAttribute('onsflag-iphonex-landscape', '');
-    }
+    const now = new Date();
+
+    const getDate = () => now.toISOString().slice(0, 10);
+    const getTime = () => now.toLocaleTimeString().slice(0, 5);
+
   </script>
 </head>
 <body>
-  This is a template for Onsen UI app.
+
+  <ons-page>
+    <ons-list>
+
+      <!-- date -->
+      <ons-list-item>
+        <ons-input id="date" type="date"></ons-input>
+      </ons-list-item>
+
+      <!-- time -->
+      <ons-list-item>
+        <ons-input id="time" type="time"></ons-input>
+      </ons-list-item>
+
+      <!-- blood sugar level -->
+      <ons-list-item>
+        <ons-input type="number" value="5.2"></ons-input>
+      </ons-list-item>
+
+      <!-- carbs -->
+      <ons-list-item>
+        <ons-input type="number" value="30"></ons-input>
+      </ons-list-item>
+
+      <!-- insulin -->
+      <ons-list-item>
+        <ons-input type="number" value="3"></ons-input>
+
+        <ons-select>
+          <option>novorapid</option>
+          <option>levemir</option>
+        </ons-select>
+      </ons-list-item>
+
+    </ons-list>
+  </ons-page>
+
 </body>
 </html>

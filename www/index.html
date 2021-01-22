@@ -18,6 +18,8 @@
 
       document.querySelector('#date').value = getDate();
       document.querySelector('#time').value = getTime();
+
+      document.addEventListener('swipeup', () => alert('swiped up to save'));
     });
 
     const now = new Date();

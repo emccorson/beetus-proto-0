@@ -18,8 +18,8 @@
     ////////////////////////////////////////////////////////////////////////////
 
     const dbName = 'BigBusterDB';
-    const storeName = 'BigBusterStore';
-    const version = 1;
+    const storeName = 'BigBlasterStore';
+    const version = 4;
 
     ////////////////////////////////////////////////////////////////////////////
     // MAIN
@@ -123,7 +123,7 @@
 
     const createDB = () => {
       let objectStore;
-      const DBOpenReq = indexedDB.open(dbName, 3);
+      const DBOpenReq = indexedDB.open(dbName, version);
 
       DBOpenReq.onerror = error => console.warn(error);
 

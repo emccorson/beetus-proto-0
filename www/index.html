@@ -26,21 +26,94 @@
     ////////////////////////////////////////////////////////////////////////////
 
     let db;
+    let readingsResults = [];
 
     ons.ready(function() {
       createDB();
 
+      document.addEventListener('init', (event) => {
+        switch (event.target.id) {
+          case 'add-page':
+            initAddPage();
+            break;
+          case 'readings-page':
+            initReadingsPage();
+            break;
+        }
+      });
+
+      document.addEventListener('prechange', (event) => {
+        if (event.target.id === 'tabbar' && event.tabItem.page === 'readings-page.html') {
+          loadReadings();
+        }
+      });
+
+    });
+
+    ////////////////////////////////////////////////////////////////////////////
+    // METHODS
+    ////////////////////////////////////////////////////////////////////////////
+
+    const initAddPage = () => {
       document.querySelector('#saveButton').onclick = submit;
 
       document.querySelector('#date').value = getDate();
       document.querySelector('#time').value = getTime();
 
       document.addEventListener('swipeup', submit);
-    });
+    };
 
-    ////////////////////////////////////////////////////////////////////////////
-    // METHODS
-    ////////////////////////////////////////////////////////////////////////////
+    const initReadingsPage = () => {
+      const readingsList = document.querySelector('#readings-list');
+
+      readingsList.delegate = {
+        createItemContent: (i) => {
+          // workaround for Onsen UI bug #2874
+          if (readingsResults.length === 0) {
+            return ons.createElement('<ons-list-item></ons-list-item>');
+          }
+
+          const { date, time, bloodSugar, carbs, insulin, insulinType } = readingsResults[i];
+          return ons.createElement(`
+          <div>
+            <ons-list-header>
+              ${date} ${time}
+            </ons-list-header>
+            <ons-list-item>
+              ${bloodSugar}
+            </ons-list-item>
+            <ons-list-item>
+              ${carbs}
+            </ons-list-item>
+            <ons-list-item>
+              ${insulin}
+            </ons-list-item>
+            <ons-list-item>
+              ${insulinType}
+            </ons-list-item>
+          </div>
+          `);
+        },
+        countItems: () => readingsResults.length
+      };
+
+      loadReadings();
+    };
+
+    const loadReadings = () => {
+      const transaction = db.transaction([storeName]);
+      transaction.oncomplete = (event) => {
+        console.log(event);
+      };
+      const store = transaction.objectStore(storeName);
+      const request = store.getAll();
+
+      request.onsuccess = event => {
+        readingsResults = request.result;
+        const readingsList = document.querySelector('#readings-list');
+        readingsList.refresh();
+      }
+    };
 
     const now = new Date();
 
@@ -100,49 +173,64 @@
 </head>
 <body>
 
-  <ons-page>
-    <ons-toolbar>
-      <div class="right">
-        <ons-toolbar-button id="saveButton">
-          Save
-        </ons-toolbar-button>
-      </div>
-    </ons-toolbar>
+  <ons-tabbar id="tabbar" swipeable>
+    <ons-tab page="add-page.html" label="Add"></ons-tab>
+    <ons-tab page="readings-page.html" label="Readings"></ons-tab>
+  </ons-tabbar>
 
-    <ons-list>
+  <template id="add-page.html">
+    <ons-page id="add-page">
+      <ons-toolbar>
+        <div class="right">
+          <ons-toolbar-button id="saveButton">
+            Save
+          </ons-toolbar-button>
+        </div>
+      </ons-toolbar>
 
-      <!-- date -->
-      <ons-list-item>
-        <ons-input id="date" type="date"></ons-input>
-      </ons-list-item>
+      <ons-list>
 
-      <!-- time -->
-      <ons-list-item>
-        <ons-input id="time" type="time"></ons-input>
-      </ons-list-item>
+        <!-- date -->
+        <ons-list-item>
+          <ons-input id="date" type="date"></ons-input>
+        </ons-list-item>
 
-      <!-- blood sugar level -->
-      <ons-list-item>
-        <ons-input id="blood-sugar" type="number" value="5.2"></ons-input>
-      </ons-list-item>
+        <!-- time -->
+        <ons-list-item>
+          <ons-input id="time" type="time"></ons-input>
+        </ons-list-item>
 
-      <!-- carbs -->
-      <ons-list-item>
-        <ons-input id="carbs" type="number" value="30"></ons-input>
-      </ons-list-item>
+        <!-- blood sugar level -->
+        <ons-list-item>
+          <ons-input id="blood-sugar" type="number" value="5.2"></ons-input>
+        </ons-list-item>
 
-      <!-- insulin -->
-      <ons-list-item>
-        <ons-input id="insulin" type="number" value="3"></ons-input>
+        <!-- carbs -->
+        <ons-list-item>
+          <ons-input id="carbs" type="number" value="30"></ons-input>
+        </ons-list-item>
 
-        <ons-select id="insulin-type">
-          <option>novorapid</option>
-          <option>levemir</option>
-        </ons-select>
-      </ons-list-item>
+        <!-- insulin -->
+        <ons-list-item>
+          <ons-input id="insulin" type="number" value="3"></ons-input>
 
-    </ons-list>
-  </ons-page>
+          <ons-select id="insulin-type">
+            <option>novorapid</option>
+            <option>levemir</option>
+          </ons-select>
+        </ons-list-item>
+
+      </ons-list>
+    </ons-page>
+  </template>
+
+  <template id="readings-page.html">
+    <ons-page id="readings-page">
+      <ons-list>
+        <ons-lazy-repeat id="readings-list"></ons-lazy-repeat>
+      </ons-list>
+    </ons-page>
+  </template>
 
 </body>
 </html>

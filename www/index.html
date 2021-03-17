@@ -13,22 +13,88 @@
   <link rel="stylesheet" href="css/style.css">
 
   <script>
-    ons.ready(function() {
-      console.log("Onsen UI is ready!");
+    ////////////////////////////////////////////////////////////////////////////
+    // CONSTANTS
+    ////////////////////////////////////////////////////////////////////////////
 
-      document.querySelector('#saveButton').onclick = () =>
-        alert('tapped button to save');
+    const dbName = 'BigBusterDB';
+    const storeName = 'BigBusterStore';
+    const version = 1;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // MAIN
+    ////////////////////////////////////////////////////////////////////////////
+
+    let db;
+
+    ons.ready(function() {
+      createDB();
+
+      document.querySelector('#saveButton').onclick = submit;
 
       document.querySelector('#date').value = getDate();
       document.querySelector('#time').value = getTime();
 
-      document.addEventListener('swipeup', () => alert('swiped up to save'));
+      document.addEventListener('swipeup', submit);
     });
+
+    ////////////////////////////////////////////////////////////////////////////
+    // METHODS
+    ////////////////////////////////////////////////////////////////////////////
 
     const now = new Date();
 
     const getDate = () => now.toISOString().slice(0, 10);
+
     const getTime = () => now.toLocaleTimeString().slice(0, 5);
+
+    const createDB = () => {
+      let objectStore;
+      const DBOpenReq = indexedDB.open(dbName, 3);
+
+      DBOpenReq.onerror = error => console.warn(error);
+
+      DBOpenReq.onsuccess = (event) => {
+        db = event.target.result;
+        console.log('success', db);
+      };
+
+      DBOpenReq.onupgradeneeded = (event) => {
+        db = event.target.result;
+        console.log('upgrade', db);
+        if (!db.objectStoreNames.contains(storeName)) {
+          objectStore = db.createObjectStore(storeName, { autoIncrement: true });
+        }
+      };
+    }
+
+    const submit = () => {
+      const date = document.getElementById('date').value;
+      const time = document.getElementById('time').value;
+      const bloodSugar = document.getElementById('blood-sugar').value;
+      const carbs = document.getElementById('carbs').value;
+      const insulin = document.getElementById('insulin').value;
+      const insulinType = document.getElementById('insulin-type').value;
+
+      const reading = {
+        date,
+        time,
+        bloodSugar,
+        carbs,
+        insulin,
+        insulinType
+      };
+
+      const transaction = db.transaction([storeName], 'readwrite');
+      transaction.oncomplete = (event) => {
+        console.log(event);
+      };
+      const store = transaction.objectStore(storeName);
+      const request = store.add(reading);
+
+      request.onsuccess = event =>
+        console.log('successfully added');
+    };
 
   </script>
 </head>
@@ -57,19 +123,19 @@
 
       <!-- blood sugar level -->
       <ons-list-item>
-        <ons-input type="number" value="5.2"></ons-input>
+        <ons-input id="blood-sugar" type="number" value="5.2"></ons-input>
       </ons-list-item>
 
       <!-- carbs -->
       <ons-list-item>
-        <ons-input type="number" value="30"></ons-input>
+        <ons-input id="carbs" type="number" value="30"></ons-input>
       </ons-list-item>
 
       <!-- insulin -->
       <ons-list-item>
-        <ons-input type="number" value="3"></ons-input>
+        <ons-input id="insulin" type="number" value="3"></ons-input>
 
-        <ons-select>
+        <ons-select id="insulin-type">
           <option>novorapid</option>
           <option>levemir</option>
         </ons-select>
